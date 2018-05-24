@@ -1,0 +1,67 @@
+service: api-auth
+
+custom:
+  secrets: ${file(secrets.json)}
+
+plugins:
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: dev
+  region: us-east-1
+  environment:
+    JWT_SECRET: ${self:custom.secrets.JWT_SECRET}
+    DB: ${self:custom.secrets.DB}
+
+functions:
+  guest_register:
+    handler: guests/handler.create
+    events:
+      - http:
+          path: guests
+          method: post
+          cors: true
+  guest_update:
+    handler: guests/handler.update
+    events:
+      - http:
+          path: guests
+          method: patch
+          cors: true
+  guest_list:
+    handler: guests/handler.list
+    events:
+      - http:
+          path: guests
+          method: get
+          cors: true
+  wall_messages_register:
+    handler: wall-messages/handler.create
+    events:
+      - http:
+          path: wall-messages
+          method: post
+          cors: true
+  wall_message_list:
+    handler: wall-messages/handler.list
+    events:
+      - http:
+          path: wall-messages
+          method: get
+          cors: true      
+  wished_musics_register:
+    handler: wished-musics/handler.create
+    events:
+      - http:
+          path: wished-musics
+          method: post
+          cors: true
+  wished_musics_list:
+    handler: wished-musics/handler.list
+    events:
+      - http:
+          path: wished-musics
+          method: get
+          cors: true      
