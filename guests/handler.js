@@ -1,7 +1,8 @@
 const connectToDatabase = require('../config/db');
 const GuestsSchema = require('../guests/models/guests');
 const WishedMusicSchema = require('../wished-musics/models/wished-musics');
-
+const RankingSchema = require('../wished-musics/models/ranking');
+const getResponse = require('../services/response');
 const jsonData = require('./guests-data.json');
 
 module.exports.create = async (event, context) => {
@@ -11,12 +12,7 @@ module.exports.create = async (event, context) => {
 
     const guests = await GuestsSchema.insertMany(jsonData);
 
-    return {
-      statusCode: 200,
-      body: {
-        message: 'DB started'
-      }
-    };
+    return getResponse(200, JSON.stringify({ message: 'DB started' }));
   } catch (error) {
     return {
       statusCode: error.statusCode || 500,
@@ -37,7 +33,11 @@ module.exports.update = async (event, context) => {
 
     const eventBody = JSON.parse(event.body);
 
-    if (!eventBody._id || !eventBody.confirmed) {
+    if (
+      !eventBody._id ||
+      eventBody.confirmed === undefined ||
+      eventBody.confirmed === null
+    ) {
       throw new Error('Dados inconsistentes');
     }
     const _id = eventBody._id;
@@ -52,24 +52,38 @@ module.exports.update = async (event, context) => {
 
     if (eventBody.music) {
       await WishedMusicSchema.create({
-        name: eventBody.music.name,
-        artist: eventBody.music.artist,
+        name: eventBody.music.name.trim(),
+        music: eventBody.music.music.trim(),
+        link: eventBody.music.link,
         guest
       });
+
+      const ranking = await RankingSchema.findOne({
+        name: new RegExp(`.*${eventBody.music.name.trim()}.*`, 'i'),
+        music: new RegExp(`.*${eventBody.music.music.trim()}.*`, 'i')
+      });
+
+      if (!ranking) {
+        await RankingSchema.create({
+          name: eventBody.music.name.trim(),
+          music: eventBody.music.music.trim(),
+          total: 1
+        });
+      } else {
+        await RankingSchema.findByIdAndUpdate(ranking._id, {
+          $inc: {
+            total: 1
+          }
+        });
+      }
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: 'Presença confirmada' })
-    };
+    return getResponse(200, JSON.stringify({ message: 'Presença confirmada' }));
   } catch (error) {
-    return {
-      statusCode: error.statusCode || 500,
-      headers: {
-        'Content-Type': 'text/plain'
-      },
-      body: JSON.stringify({ message: error.message })
-    };
+    return getResponse(
+      error.statusCode || 500,
+      JSON.stringify({ message: error.message })
+    );
   }
 };
 
@@ -95,21 +109,11 @@ module.exports.list = async (event, context) => {
     }
 
     const guests = await GuestsSchema.find(filter);
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(guests)
-    };
+    return getResponse(200, JSON.stringify(guests));
   } catch (error) {
-    console.log(error);
-    return {
-      statusCode: error.statusCode || 500,
-      headers: {
-        'Content-Type': 'text/plain'
-      },
-      body: JSON.stringify({
-        message: error.message
-      })
-    };
+    return getResponse(
+      error.statusCode || 500,
+      JSON.stringify({ message: error.message })
+    );
   }
 };

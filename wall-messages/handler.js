@@ -1,6 +1,6 @@
 const connectToDatabase = require('../config/db');
 const WallMessageSchema = require('../wall-messages/models/wall-messages');
-
+const getResponse = require('../services/response');
 module.exports.create = async (event, context) => {
   try {
     context.callbackWaitsForEmptyEventLoop = false;
@@ -14,10 +14,13 @@ module.exports.create = async (event, context) => {
       author: eventBody.author,
       message: eventBody.message
     });
-    return {
-      statusCode: 200,
-      body: { message: 'Mensagem gravada com sucesso, obrigado' }
-    };
+
+    return getResponse(
+      200,
+      JSON.stringify({
+        message: 'Mensagem gravada com sucesso, obrigado'
+      })
+    );
   } catch (error) {
     return {
       statusCode: error.statusCode || 500,
@@ -32,10 +35,7 @@ module.exports.list = async (event, context) => {
     context.callbackWaitsForEmptyEventLoop = false;
     await connectToDatabase();
     messages = await WallMessageSchema.find({});
-    return {
-      statusCode: 200,
-      body: JSON.stringify(messages)
-    };
+    return getResponse(200, JSON.stringify(messages));
   } catch (error) {
     return {
       statusCode: error.statusCode || 500,

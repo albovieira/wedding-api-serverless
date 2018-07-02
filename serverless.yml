@@ -1,4 +1,4 @@
-service: api-auth
+service: api-wedding
 
 custom:
   secrets: ${file(secrets.json)}
@@ -43,25 +43,59 @@ functions:
       - http:
           path: wall-messages
           method: post
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
   wall_message_list:
     handler: wall-messages/handler.list
     events:
       - http:
           path: wall-messages
           method: get
-          cors: true      
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
   wished_musics_register:
     handler: wished-musics/handler.create
     events:
       - http:
           path: wished-musics
           method: post
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
   wished_musics_list:
     handler: wished-musics/handler.list
     events:
       - http:
           path: wished-musics
+          method: get
+          cors: true      
+  ranking_list:
+    handler: wished-musics/handler.ranking
+    events:
+      - http:
+          path: ranking
           method: get
           cors: true      
