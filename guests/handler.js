@@ -5,7 +5,7 @@ const RankingSchema = require('../wished-musics/models/ranking');
 const getResponse = require('../services/response');
 const jsonData = require('./guests-data.json');
 
-module.exports.create = async (event, context) => {
+module.exports.createBatch = async (event, context) => {
   try {
     context.callbackWaitsForEmptyEventLoop = false;
     await connectToDatabase();
@@ -13,6 +13,30 @@ module.exports.create = async (event, context) => {
     const guests = await GuestsSchema.insertMany(jsonData);
 
     return getResponse(200, JSON.stringify({ message: 'DB started' }));
+  } catch (error) {
+    return {
+      statusCode: error.statusCode || 500,
+      headers: {
+        'Content-Type': 'text/plain'
+      },
+      body: JSON.stringify({
+        message: error.message
+      })
+    };
+  }
+};
+
+module.exports.create = async (event, context) => {
+  try {
+    context.callbackWaitsForEmptyEventLoop = false;
+    await connectToDatabase();
+
+    const eventBody = JSON.parse(event.body);
+    await GuestsSchema.create({
+      name: eventBody.name
+    });
+
+    return getResponse(200, JSON.stringify({ message: 'Convidado criado' }));
   } catch (error) {
     return {
       statusCode: error.statusCode || 500,
@@ -87,6 +111,35 @@ module.exports.update = async (event, context) => {
   }
 };
 
+module.exports.delete = async (event, context) => {
+  try {
+    context.callbackWaitsForEmptyEventLoop = false;
+    await connectToDatabase();
+
+    const { id } = event.pathParameters;
+
+    if (!id) {
+      throw new Error('Id nao informado');
+    }
+
+    await GuestsSchema.findByIdAndRemove(id);
+
+    return getResponse(
+      200,
+      JSON.stringify({
+        message: 'Convidado deletado'
+      })
+    );
+  } catch (error) {
+    console.log(error);
+    return {
+      statusCode: error.statusCode || 500,
+      headers: { 'Content-Type': 'text/plain' },
+      body: error.message
+    };
+  }
+};
+
 module.exports.list = async (event, context) => {
   try {
     context.callbackWaitsForEmptyEventLoop = false;
@@ -95,12 +148,11 @@ module.exports.list = async (event, context) => {
     let filter = {};
     const params = event.queryStringParameters;
 
-    const name = params.name.replace(/['"]+/g, '');
-
-    if (!name) {
-      throw new Error('Prrencha seu nome completo');
+    if (!params.name) {
+      throw new Error('Prencha seu nome completo');
     }
 
+    const name = params.name.replace(/['"]+/g, '');
     if (params) {
       filter.name = {
         $regex: name,
@@ -109,6 +161,41 @@ module.exports.list = async (event, context) => {
     }
 
     const guests = await GuestsSchema.find(filter);
+    return getResponse(200, JSON.stringify(guests));
+  } catch (error) {
+    return getResponse(
+      error.statusCode || 500,
+      JSON.stringify({ message: error.message })
+    );
+  }
+};
+
+module.exports.listAll = async (event, context) => {
+  try {
+    context.callbackWaitsForEmptyEventLoop = false;
+    await connectToDatabase();
+
+    let filter = {};
+    const params = event.queryStringParameters || {};
+
+    const options = {
+      page: params.page ? parseInt(params.page) : 1,
+      limit: params.limit ? parseInt(params.limit) : 10,
+      sort: { name: 1 }
+    };
+
+    if (params.confirmed) {
+      filter.confirmed = params.confirmed === 'yes' ? true : false;
+    }
+    if (params.name) {
+      filter.name = {
+        $regex: params.name,
+        $options: 'i'
+      };
+    }
+
+    const guests = await GuestsSchema.paginate(filter, options);
+
     return getResponse(200, JSON.stringify(guests));
   } catch (error) {
     return getResponse(

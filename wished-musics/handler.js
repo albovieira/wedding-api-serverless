@@ -2,6 +2,7 @@ const _ = require('lodash');
 const connectToDatabase = require('../config/db');
 const WishedMusicSchema = require('../wished-musics/models/wished-musics');
 const RankingSchema = require('../wished-musics/models/ranking');
+const getResponse = require('../services/response');
 
 module.exports.create = async (event, context) => {
   try {
@@ -18,12 +19,13 @@ module.exports.create = async (event, context) => {
       link: eventBody.link,
       guest: eventBody.guest
     });
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
+
+    return getResponse(
+      200,
+      JSON.stringify({
         message: 'Sugestão gravada com sucesso, obrigado'
       })
-    };
+    );
   } catch (error) {
     return {
       statusCode: error.statusCode || 500,
@@ -39,10 +41,7 @@ module.exports.list = async (event, context) => {
     await connectToDatabase();
     const musics = await WishedMusicSchema.find({}).lean();
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(musics)
-    };
+    return getResponse(200, JSON.stringify(musics));
   } catch (error) {
     return {
       statusCode: error.statusCode || 500,
@@ -61,10 +60,32 @@ module.exports.ranking = async (event, context) => {
       .sort({ total: -1 })
       .limit(5);
 
+    return getResponse(200, JSON.stringify(musics));
+  } catch (error) {
     return {
-      statusCode: 200,
-      body: JSON.stringify(musics)
+      statusCode: error.statusCode || 500,
+      headers: { 'Content-Type': 'text/plain' },
+      body: error.message
     };
+  }
+};
+
+module.exports.rankingAll = async (event, context) => {
+  try {
+    context.callbackWaitsForEmptyEventLoop = false;
+    await connectToDatabase();
+
+    const params = event.queryStringParameters || {};
+
+    const options = {
+      page: params.page ? parseInt(params.page) : 1,
+      limit: params.limit ? parseInt(params.limit) : 10,
+      sort: { total: -1 },
+      lean: true
+    };
+
+    const musics = await RankingSchema.paginate({}, options);
+    return getResponse(200, JSON.stringify(musics));
   } catch (error) {
     return {
       statusCode: error.statusCode || 500,

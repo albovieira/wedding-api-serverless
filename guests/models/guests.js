@@ -3,8 +3,13 @@ const GuestsSchema = new mongoose.Schema({
   name: { type: String, unique: true },
   email: String,
   confirmed: { type: Boolean, default: false },
+  invitedBy: String,
   date_confirmation: Date
 });
+
+const mongoosePaginate = require('mongoose-paginate');
+GuestsSchema.plugin(mongoosePaginate);
+
 mongoose.model('Guests', GuestsSchema);
 module.exports = mongoose.model('Guests');
 

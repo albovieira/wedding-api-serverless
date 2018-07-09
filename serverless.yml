@@ -16,13 +16,27 @@ provider:
     DB: ${self:custom.secrets.DB}
 
 functions:
+  guest_register_batch:
+    handler: guests/handler.createBatch
+    events:
+      - http:
+          path: guests/batch
+          method: post
+          cors: true
   guest_register:
     handler: guests/handler.create
     events:
       - http:
           path: guests
-          method: post
+          method: post  
           cors: true
+  guest_delete:
+    handler: guests/handler.delete
+    events:
+      - http:
+          path: guests/{id}
+          method: delete  
+          cors: true      
   guest_update:
     handler: guests/handler.update
     events:
@@ -37,38 +51,62 @@ functions:
           path: guests
           method: get
           cors: true
+  guest_list_all:
+    handler: guests/handler.listAll
+    events:
+      - http:
+          path: guests/all
+          method: get
+          cors: true
   wall_messages_register:
     handler: wall-messages/handler.create
     events:
       - http:
           path: wall-messages
           method: post
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Amz-User-Agent
-            allowCredentials: false
+          cors: true
+  wall_messages_delete:
+    handler: wall-messages/handler.delete
+    events:
+      - http:
+          path: wall-messages
+          method: delete
+          cors: true
+  wall_messages_update:
+    handler: wall-messages/handler.update
+    events:
+      - http:
+          path: wall-messages/{id}
+          method: patch
+          cors: true    
   wall_message_list:
     handler: wall-messages/handler.list
     events:
       - http:
           path: wall-messages
           method: get
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Amz-User-Agent
-            allowCredentials: false
+          cors: true
+  wall_message_list_all:
+    handler: wall-messages/handler.listAll
+    events:
+      - http:
+          path: wall-messages/all
+          method: get
+          cors: true
+  wall_message_get:
+    handler: wall-messages/handler.get
+    events:
+      - http:
+          path: wall-messages/{id}
+          method: get
+          cors: true
+  wall_message_delete:
+    handler: wall-messages/handler.delete
+    events:
+      - http:
+          path: wall-messages/{id}
+          method: delete
+          cors: true
   wished_musics_register:
     handler: wished-musics/handler.create
     events:
@@ -98,4 +136,11 @@ functions:
       - http:
           path: ranking
           method: get
-          cors: true      
+          cors: true
+  ranking_all:
+    handler: wished-musics/handler.rankingAll
+    events:
+      - http:
+          path: ranking/all
+          method: get
+          cors: true
