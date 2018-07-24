@@ -12,7 +12,9 @@ module.exports.createBatch = async (event, context) => {
 
     const guests = await GuestsSchema.insertMany(jsonData);
 
-    return getResponse(200, JSON.stringify({ message: 'DB started' }));
+    return getResponse(200, JSON.stringify({
+      message: 'DB started'
+    }));
   } catch (error) {
     return {
       statusCode: error.statusCode || 500,
@@ -36,7 +38,9 @@ module.exports.create = async (event, context) => {
       name: eventBody.name
     });
 
-    return getResponse(200, JSON.stringify({ message: 'Convidado criado' }));
+    return getResponse(200, JSON.stringify({
+      message: 'Convidado criado'
+    }));
   } catch (error) {
     return {
       statusCode: error.statusCode || 500,
@@ -57,8 +61,7 @@ module.exports.update = async (event, context) => {
 
     const eventBody = JSON.parse(event.body);
 
-    if (
-      !eventBody._id ||
+    if (!eventBody._id ||
       eventBody.confirmed === undefined ||
       eventBody.confirmed === null
     ) {
@@ -66,13 +69,33 @@ module.exports.update = async (event, context) => {
     }
     const _id = eventBody._id;
     const confirmed = eventBody.confirmed;
-    const guest = await GuestsSchema.findByIdAndUpdate(_id, {
-      $set: {
-        confirmed,
-        email: eventBody.email,
-        date_confirmation: new Date()
+
+    const update = {
+      confirmed,
+      date_confirmation: new Date()
+    }
+
+    if (eventBody.email) {
+      update.email = eventBody.email
+    }
+    if (eventBody.phone) {
+      update.phone = eventBody.phone
+    }
+    const guest = await GuestsSchema.findById(_id)
+
+    if (!confirmed) {
+      if (guest.email && eventBody.email && guest.email !== eventBody.email) {
+        throw new Error('Email não confere')
       }
+      if (guest.phone && eventBody.phone && guest.phone !== eventBody.phone) {
+        throw new Error('Phone não confere')
+      }
+    }
+
+    await GuestsSchema.findByIdAndUpdate(_id, {
+      $set: update
     });
+
 
     if (eventBody.music) {
       await WishedMusicSchema.create({
@@ -102,11 +125,21 @@ module.exports.update = async (event, context) => {
       }
     }
 
-    return getResponse(200, JSON.stringify({ message: 'Presença confirmada' }));
+    if (confirmed) {
+      return getResponse(200, JSON.stringify({
+        message: 'Presença confirmada'
+      }));
+    }
+    return getResponse(200, JSON.stringify({
+      message: 'Presença desconfirmada'
+    }));
+
   } catch (error) {
     return getResponse(
       error.statusCode || 500,
-      JSON.stringify({ message: error.message })
+      JSON.stringify({
+        message: error.message
+      })
     );
   }
 };
@@ -116,7 +149,9 @@ module.exports.delete = async (event, context) => {
     context.callbackWaitsForEmptyEventLoop = false;
     await connectToDatabase();
 
-    const { id } = event.pathParameters;
+    const {
+      id
+    } = event.pathParameters;
 
     if (!id) {
       throw new Error('Id nao informado');
@@ -134,7 +169,9 @@ module.exports.delete = async (event, context) => {
     console.log(error);
     return {
       statusCode: error.statusCode || 500,
-      headers: { 'Content-Type': 'text/plain' },
+      headers: {
+        'Content-Type': 'text/plain'
+      },
       body: error.message
     };
   }
@@ -165,7 +202,9 @@ module.exports.list = async (event, context) => {
   } catch (error) {
     return getResponse(
       error.statusCode || 500,
-      JSON.stringify({ message: error.message })
+      JSON.stringify({
+        message: error.message
+      })
     );
   }
 };
@@ -181,7 +220,9 @@ module.exports.listAll = async (event, context) => {
     const options = {
       page: params.page ? parseInt(params.page) : 1,
       limit: params.limit ? parseInt(params.limit) : 10,
-      sort: { name: 1 }
+      sort: {
+        name: 1
+      }
     };
 
     if (params.confirmed) {
@@ -195,12 +236,26 @@ module.exports.listAll = async (event, context) => {
     }
 
     const guests = await GuestsSchema.paginate(filter, options);
+    const totalGuests = await GuestsSchema.count({})
+    const confirmed = await GuestsSchema.count({
+      confirmed: true
+    })
+    const unconfirmed = await GuestsSchema.count({
+      confirmed: false
+    })
 
-    return getResponse(200, JSON.stringify(guests));
+    return getResponse(200, JSON.stringify({
+      totalGuests,
+      confirmed,
+      unconfirmed,
+      ...guests
+    }));
   } catch (error) {
     return getResponse(
       error.statusCode || 500,
-      JSON.stringify({ message: error.message })
+      JSON.stringify({
+        message: error.message
+      })
     );
   }
 };

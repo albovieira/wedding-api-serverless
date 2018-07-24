@@ -144,3 +144,10 @@ functions:
           path: ranking/all
           method: get
           cors: true
+  address:
+    handler: address/handler.getPath
+    events:
+      - http:
+          path: address/get-path
+          method: get
+          cors: true

@@ -28,6 +28,7 @@ npm manifest:
       "serverless-offline": "^3.21.1"
     },
     "dependencies": {
+      "axios": "^0.18.0",
       "bcryptjs": "^2.4.3",
       "bcryptjs-then": "^1.0.1",
       "jsonwebtoken": "^8.2.1",
@@ -76,6 +77,13 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/async/-/async-2.1.4.tgz#2d2160c7788032e4dd6cbe2502f1f9a2c8f6cde4"
     dependencies:
       lodash "^4.14.0"
+  
+  axios@^0.18.0:
+    version "0.18.0"
+    resolved "https://registry.yarnpkg.com/axios/-/axios-0.18.0.tgz#32d53e4851efdc0a11993b6cd000789d70c05102"
+    dependencies:
+      follow-redirects "^1.3.0"
+      is-buffer "^1.1.5"
   
   b64@3.x.x:
     version "3.0.3"
@@ -312,6 +320,12 @@ Lockfile:
     dependencies:
       ms "2.0.0"
   
+  debug@^3.1.0:
+    version "3.1.0"
+    resolved "https://registry.yarnpkg.com/debug/-/debug-3.1.0.tgz#5bb5a0672628b64149566ba16819e61518c67261"
+    dependencies:
+      ms "2.0.0"
+  
   detect-indent@^4.0.0:
     version "4.0.0"
     resolved "https://registry.yarnpkg.com/detect-indent/-/detect-indent-4.0.0.tgz#f76d064352cdf43a1cb6ce619c4ee3a9475de208"
@@ -331,6 +345,12 @@ Lockfile:
   esutils@^2.0.2:
     version "2.0.2"
     resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.2.tgz#0abf4f1caa5bcb1f7a9d8acc6dea4faaa04bac9b"
+  
+  follow-redirects@^1.3.0:
+    version "1.5.1"
+    resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.5.1.tgz#67a8f14f5a1f67f962c2c46469c79eaec0a90291"
+    dependencies:
+      debug "^3.1.0"
   
   globals@^9.18.0:
     version "9.18.0"
@@ -411,6 +431,10 @@ Lockfile:
       boom "5.x.x"
       cryptiles "3.x.x"
       hoek "4.x.x"
+  
+  is-buffer@^1.1.5:
+    version "1.1.6"
+    resolved "https://registry.yarnpkg.com/is-buffer/-/is-buffer-1.1.6.tgz#efaa2ea9daa0d7ab2ea13a97b2b8ad51fefbe8be"
   
   is-finite@^1.0.0:
     version "1.0.2"

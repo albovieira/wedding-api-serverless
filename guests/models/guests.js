@@ -1,8 +1,15 @@
 const mongoose = require('mongoose');
 const GuestsSchema = new mongoose.Schema({
-  name: { type: String, unique: true },
+  name: {
+    type: String,
+    unique: true
+  },
   email: String,
-  confirmed: { type: Boolean, default: false },
+  phone: String,
+  confirmed: {
+    type: Boolean,
+    default: false
+  },
   invitedBy: String,
   date_confirmation: Date
 });
