@@ -34,9 +34,13 @@ module.exports.create = async (event, context) => {
     await connectToDatabase();
 
     const eventBody = JSON.parse(event.body);
-    await GuestsSchema.create({
+    const payload = {
       name: eventBody.name
-    });
+    }
+    if (eventBody.invitedBy) {
+      payload.invitedBy = eventBody.invitedBy;
+    }
+    await GuestsSchema.create(payload);
 
     return getResponse(200, JSON.stringify({
       message: 'Convidado criado'
