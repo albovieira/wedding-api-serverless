@@ -80,7 +80,7 @@ module.exports.update = async (event, context) => {
     }
 
     if (eventBody.email) {
-      update.email = eventBody.email
+      update.email = eventBody.email.toLowerCase()
     }
     if (eventBody.phone) {
       update.phone = eventBody.phone
